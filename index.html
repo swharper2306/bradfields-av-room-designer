@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bradfield's AV Room Designer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --brand-primary: #004a7f;
+      --brand-primary-dark: #003458;
+      --brand-accent: #00b0a9;
+      --brand-bg: #f5f7fb;
+      --brand-text: #1f2933;
+      --brand-muted: #6b7280;
+      --border-radius-lg: 20px;
+      --border-radius-md: 12px;
+      --shadow-soft: 0 16px 30px rgba(15, 23, 42, 0.16);
+      --transition-fast: 0.18s ease-in-out;
+      --step-inactive: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #e0f2fe, #f9fafb);
+      color: var(--brand-text);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .logo-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-img {
+      height: 52px;
+      width: auto;
+      border-radius: 10px;
+      background: white;
+      padding: 4px 8px;
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.25);
+    }
+
+    .brand-text h1 {
+      font-size: 1.65rem;
+      font-weight: 750;
+      color: var(--brand-primary-dark);
+    }
+
+    .brand-text p {
+      font-size: 0.92rem;
+      color: var(--brand-muted);
+      max-width: 520px;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(255, 255, 255, 0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--brand-muted);
+      white-space: nowrap;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+      animation: floatBadge 4s ease-in-out infinite;
+    }
+
+    @keyframes floatBadge {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--brand-accent);
+      box-shadow: 0 0 0 4px rgba(34, 197, 235, 0.2);
+    }
+
+    .card {
+      background: white;
+      border-radius: 26px;
+      box-shadow: var(--shadow-soft);
+      padding: 20px 20px 24px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(0, 74, 127, 0.4), transparent, rgba(0, 176, 169, 0.4));
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      -webkit-mask-composite: xor;
+      opacity: 0.7;
+    }
+
+    .steps {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--brand-muted);
+      cursor: default;
+    }
+
+    .step-number {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 2px solid var(--step-inactive);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      background: white;
+      flex-shrink: 0;
+      transition: background var(--transition-fast), border-color var(--transition-fast),
+        transform var(--transition-fast), color var(--transition-fast);
+    }
+
+    .step-label {
+      white-space: nowrap;
+    }
+
+    .step.active .step-number {
+      border-color: var(--brand-primary);
+      background: var(--brand-primary);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .step.completed .step-number {
+      border-color: var(--brand-accent);
+      background: var(--brand-accent);
+      color: white;
+    }
+
+    .step-line {
+      height: 2px;
+      background: var(--step-inactive);
+      flex: 1;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .step-line.active {
+      background: linear-gradient(
+        90deg,
+        var(--brand-accent),
+        var(--brand-primary)
+      );
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 3fr 2.2fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+      color: var(--brand-primary-dark);
+    }
+
+    .section-subtitle {
+      font-size: 0.85rem;
+      color: var(--brand-muted);
+      margin-bottom: 16px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px 14px;
+      margin-bottom: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    .helper-text {
+      font-size: 0.7rem;
+      color: var(--brand-muted);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      padding: 8px 10px;
+      font-size: 0.86rem;
+      outline: none;
+      transition: border-color var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast),
+        background var(--transition-fast);
+      background: #f9fafb;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+      background: #ffffff;
+      transform: translateY(-0.5px);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      background: #f9fafb;
+      cursor: pointer;
+      transition: background var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast),
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+    }
+
+    .pill.pill-selected {
+      background: linear-gradient(
+        135deg,
+        var(--brand-primary),
+        var(--brand-accent)
+      );
+      color: white;
+      border-color: transparent;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.2);
+    }
+
+    .pill span {
+      font-size: 0.9em;
+      opacity: 0.85;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-group-right {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 9px 16px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background var(--transition-fast),
+        box-shadow var(--transition-fast),
+        transform var(--transition-fast),
+        color var(--transition-fast);
+    }
+
+    .btn-primary {
+      background: linear-gradient(
+        135deg,
+        var(--brand-primary),
+        var(--brand-accent)
+      );
+      color: white;
+      box-shadow: 0 12px 25px rgba(15, 23, 42, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.35);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--brand-primary-dark);
+      border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+      background: #f3f4f6;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--brand-muted);
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .btn-ghost:hover {
+      color: var(--brand-primary-dark);
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: white;
+      box-shadow: 0 10px 20px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(22, 163, 74, 0.35);
+    }
+
+    .summary-card {
+      border-radius: var(--border-radius-lg);
+      background: radial-gradient(circle at top left, #eff6ff, #f9fafb);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      padding: 14px 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .summary-heading {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--brand-primary-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .summary-heading span {
+      font-size: 0.78rem;
+      color: var(--brand-muted);
+      font-weight: 400;
+    }
+
+    .summary-tagline {
+      font-size: 0.78rem;
+      color: var(--brand-muted);
+      margin-bottom: 10px;
+    }
+
+    .summary-cols {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 700px) {
+      .summary-cols {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .summary-block {
+      background: white;
+      border-radius: var(--border-radius-md);
+      padding: 10px 12px;
+      border: 1px solid rgba(203, 213, 225, 0.8);
+    }
+
+    .summary-block h4 {
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+      color: #374151;
+    }
+
+    .summary-block ul {
+      margin-left: 16px;
+      margin-top: 4px;
+    }
+
+    .summary-block li {
+      font-size: 0.78rem;
+      margin-bottom: 2px;
+      color: #4b5563;
+    }
+
+    .summary-note {
+      font-size: 0.74rem;
+      color: var(--brand-muted);
+      margin-top: 6px;
+    }
+
+    .summary-textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px dashed #cbd5e1;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+      background: #f9fafb;
+      min-height: 110px;
+      resize: vertical;
+      margin-top: 8px;
+    }
+
+    .copy-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .copy-status {
+      font-size: 0.75rem;
+      color: var(--brand-muted);
+    }
+
+    .accent-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      color: var(--brand-muted);
+      background: rgba(255, 255, 255, 0.9);
+      margin-top: 4px;
+    }
+
+    .accent-chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--brand-accent);
+    }
+
+    .inline-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 0.7rem;
+      background: rgba(59, 130, 246, 0.08);
+      color: #1d4ed8;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .inline-tag span {
+      font-size: 0.85em;
+      opacity: 0.85;
+    }
+
+    .emphasis {
+      font-weight: 600;
+      color: var(--brand-primary-dark);
+    }
+
+    footer {
+      margin-top: 16px;
+      font-size: 0.72rem;
+      color: var(--brand-muted);
+      text-align: center;
+    }
+
+    .disclaimer {
+      font-size: 0.72rem;
+      color: var(--brand-muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* Mini "room preview" for some extra cool factor */
+    .room-preview {
+      margin-top: 10px;
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: radial-gradient(circle at top, #e0f2fe, #eff6ff);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      font-size: 0.78rem;
+    }
+
+    .room-preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .room-preview-title {
+      font-weight: 600;
+      color: var(--brand-primary-dark);
+      font-size: 0.8rem;
+    }
+
+    .room-preview-badge {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(34, 197, 235, 0.08);
+      color: #0369a1;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+    }
+
+    .room-preview-layout {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 700px) {
+      .room-preview-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .room-preview-diagram {
+      border-radius: 12px;
+      background: white;
+      border: 1px dashed rgba(148, 163, 184, 0.8);
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--brand-muted);
+      text-align: center;
+      padding: 6px;
+    }
+
+    .room-preview-meta {
+      font-size: 0.75rem;
+      color: var(--brand-muted);
+    }
+
+    .room-preview-meta span {
+      display: inline-block;
+      margin-right: 6px;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="logo-block">
+        <img
+          src="https://img1.wsimg.com/isteam/ip/d2bb57a0-f1f9-4a64-af22-b9a835abffb1/Bradfields-Web-Logo.png/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:370,cg:true"
+          alt="Bradfield's Computer Supply Logo"
+          class="logo-img"
+        />
+        <div class="brand-text">
+          <h1>AV Room Designer</h1>
+          <p>
+            Quickly map out your meeting, classroom, or collaboration space.
+            Get a concept-level design that our AV engineers can turn into a
+            fully engineered solution.
+          </p>
+        </div>
+      </div>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        <span>Pre-design tool · Requests emailed to Bradfield's AV team</span>
+      </div>
+    </header>
+
+    <div class="card">
+      <!-- Progress Steps -->
+      <div class="steps" id="steps">
+        <div class="step step-1 active">
+          <div class="step-number">1</div>
+          <div class="step-label">Room Basics</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step step-2">
+          <div class="step-number">2</div>
+          <div class="step-label">Use Cases & Tech</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step step-3">
+          <div class="step-number">3</div>
+          <div class="step-label">Budget & Preferences</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step step-4">
+          <div class="step-number">4</div>
+          <div class="step-label">Summary & Contact</div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <!-- Left: Form -->
+        <div id="form-panel">
+          <!-- STEP 1 -->
+          <section class="step-panel" data-step="1">
+            <h2>Room Basics</h2>
+            <p class="section-subtitle">
+              Tell us about the space. This helps us size displays, audio
+              coverage, and camera needs.
+            </p>
+
+            <div class="field-grid">
+              <div class="field">
+                <label for="roomName">Room name / label</label>
+                <input
+                  type="text"
+                  id="roomName"
+                  placeholder="e.g., 3rd Floor Conference, Physics Classroom 210"
+                />
+                <div class="helper-text">Helpful for you and for our AV team.</div>
+              </div>
+
+              <div class="field">
+                <label for="roomType">Room type</label>
+                <select id="roomType">
+                  <option value="">Select...</option>
+                  <option value="huddle">Huddle / Focus Room</option>
+                  <option value="conference">Conference Room</option>
+                  <option value="boardroom">Boardroom</option>
+                  <option value="classroom">Classroom</option>
+                  <option value="training">Training Room</option>
+                  <option value="auditorium">Auditorium / Large Space</option>
+                  <option value="other">Other / Multi-purpose</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Approx. length (ft)</label>
+                <input
+                  type="number"
+                  id="roomLength"
+                  min="6"
+                  max="200"
+                  placeholder="e.g., 20"
+                />
+              </div>
+
+              <div class="field">
+                <label>Approx. width (ft)</label>
+                <input
+                  type="number"
+                  id="roomWidth"
+                  min="6"
+                  max="200"
+                  placeholder="e.g., 14"
+                />
+              </div>
+
+              <div class="field">
+                <label for="seatingStyle">Seating / layout style</label>
+                <select id="seatingStyle">
+                  <option value="">Select...</option>
+                  <option value="boardroom">Boardroom (table-centric)</option>
+                  <option value="u-shape">U-Shape</option>
+                  <option value="classroom">Classroom / Rows</option>
+                  <option value="theater">Theater Seating</option>
+                  <option value="pods">Pods / Clusters</option>
+                  <option value="flex">Flexible / Movable</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="capacity">Approx. number of people</label>
+                <input
+                  type="number"
+                  id="capacity"
+                  min="1"
+                  max="500"
+                  placeholder="e.g., 10"
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="roomNotes">Anything unique about this room?</label>
+              <textarea
+                id="roomNotes"
+                placeholder="e.g., Glass walls, lots of windows, existing display on north wall, low ceiling, concrete walls, etc."
+              ></textarea>
+            </div>
+          </section>
+
+          <!-- STEP 2 -->
+          <section class="step-panel" data-step="2" style="display: none;">
+            <h2>Use Cases & Technology</h2>
+            <p class="section-subtitle">
+              What do you want to do in this room day-to-day?
+            </p>
+
+            <div class="field">
+              <label>Primary use cases (choose all that apply)</label>
+              <div class="pill-group" id="useCases">
+                <button type="button" class="pill" data-value="presentations">
+                  Presentations / Slides
+                </button>
+                <button type="button" class="pill" data-value="video-conferencing">
+                  Video Conferencing
+                </button>
+                <button type="button" class="pill" data-value="training">
+                  Training / Workshops
+                </button>
+                <button type="button" class="pill" data-value="hybrid-learning">
+                  Hybrid Learning / Remote Students
+                </button>
+                <button type="button" class="pill" data-value="whiteboarding">
+                  Digital Whiteboarding
+                </button>
+                <button type="button" class="pill" data-value="digital-signage">
+                  Digital Signage
+                </button>
+                <button type="button" class="pill" data-value="room-scheduler">
+                  Room Scheduling Display
+                </button>
+              </div>
+              <div class="helper-text">
+                This drives display size, camera framing, mic pickup, and control
+                simplicity.
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Video platforms / calling tools</label>
+              <div class="pill-group" id="platforms">
+                <button type="button" class="pill" data-value="teams">
+                  Microsoft Teams
+                </button>
+                <button type="button" class="pill" data-value="zoom">Zoom</button>
+                <button type="button" class="pill" data-value="webex">
+                  Cisco Webex
+                </button>
+                <button type="button" class="pill" data-value="google-meet">
+                  Google Meet
+                </button>
+                <button type="button" class="pill" data-value="soft-codec">
+                  Other / PC-based (soft codec)
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Connection preferences</label>
+              <div class="pill-group" id="connections">
+                <button type="button" class="pill" data-value="hdmi">
+                  HDMI at the table
+                </button>
+                <button type="button" class="pill" data-value="usb-c">
+                  USB-C one-cable to laptop
+                </button>
+                <button type="button" class="pill" data-value="wireless">
+                  Wireless presenting (e.g. Barco / built-in)
+                </button>
+                <button type="button" class="pill" data-value="room-pc">
+                  Dedicated in-room PC
+                </button>
+              </div>
+            </div>
+
+            <div class="field-grid">
+              <div class="field">
+                <label for="cameraPriority">Camera preferences</label>
+                <select id="cameraPriority">
+                  <option value="">Select...</option>
+                  <option value="basic">
+                    Basic fixed camera
+                  </option>
+                  <option value="auto-framing">
+                    Auto-framing camera (tracks people)
+                  </option>
+                  <option value="ptz">
+                    PTZ camera with presets
+                  </option>
+                  <option value="none">
+                    No camera needed
+                  </option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="audioPriority">Audio priority</label>
+                <select id="audioPriority">
+                  <option value="">Select...</option>
+                  <option value="simple">
+                    Simple (soundbar / basic mics)
+                  </option>
+                  <option value="table-mics">
+                    Table mics for better pickup
+                  </option>
+                  <option value="ceiling-mics">
+                    Ceiling mics for a clean table
+                  </option>
+                  <option value="high-output">
+                    High output / reinforcement
+                  </option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <!-- STEP 3 -->
+          <section class="step-panel" data-step="3" style="display: none;">
+            <h2>Budget & Preferences</h2>
+            <p class="section-subtitle">
+              Rough guardrails help Bradfield’s design a system that matches
+              expectations and budget.
+            </p>
+
+            <div class="field">
+              <label>Budget comfort zone (hardware + install)</label>
+              <div class="pill-group" id="budgetRange">
+                <button type="button" class="pill" data-value="entry">
+                  Entry: $5k–$15k
+                </button>
+                <button type="button" class="pill" data-value="standard">
+                  Standard: $15k–$40k
+                </button>
+                <button type="button" class="pill" data-value="premium">
+                  Premium: $40k+
+                </button>
+                <button type="button" class="pill" data-value="unsure">
+                  Not sure / need guidance
+                </button>
+              </div>
+            </div>
+
+            <div class="field-grid">
+              <div class="field">
+                <label for="timeline">Ideal go-live timeline</label>
+                <select id="timeline">
+                  <option value="">Select...</option>
+                  <option value="asap">ASAP / 0–60 days</option>
+                  <option value="quarter">
+                    Within the next quarter
+                  </option>
+                  <option value="six-months">
+                    Within 6 months
+                  </option>
+                  <option value="planning">
+                    Just exploring / early planning
+                  </option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="supportLevel">Support expectations</label>
+                <select id="supportLevel">
+                  <option value="">Select...</option>
+                  <option value="basic">
+                    Basic warranty + break/fix
+                  </option>
+                  <option value="enhanced">
+                    Enhanced support / faster response
+                  </option>
+                  <option value="managed">
+                    Managed AV (monitoring / lifecycle)
+                  </option>
+                  <option value="unsure">Not sure yet</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="preferenceNotes">
+                Any brands, standards, or preferences?
+              </label>
+              <textarea
+                id="preferenceNotes"
+                placeholder="e.g., Must integrate with Cisco network, prefer Teams Rooms, existing Crestron infrastructure, existing display we want to reuse, etc."
+              ></textarea>
+            </div>
+          </section>
+
+          <!-- STEP 4 -->
+          <section class="step-panel" data-step="4" style="display: none;">
+            <h2>Summary & Contact</h2>
+            <p class="section-subtitle">
+              Review the concept-level design and send it to Bradfield’s AV Team
+              to receive a fully engineered solution and quote.
+            </p>
+
+            <div class="field">
+              <label for="contactName">Your name</label>
+              <input
+                type="text"
+                id="contactName"
+                placeholder="e.g., Jane Smith"
+              />
+            </div>
+
+            <div class="field-grid">
+              <div class="field">
+                <label for="contactEmail">Email</label>
+                <input
+                  type="text"
+                  id="contactEmail"
+                  placeholder="e.g., jsmith@yourorganization.org"
+                />
+              </div>
+              <div class="field">
+                <label for="contactOrg">Organization</label>
+                <input
+                  type="text"
+                  id="contactOrg"
+                  placeholder="e.g., OSF Healthcare, District 321, XYZ Corp"
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="contactPhone">Phone (optional)</label>
+              <input
+                type="text"
+                id="contactPhone"
+                placeholder="e.g., (309) 555-1234"
+              />
+            </div>
+
+            <div class="field contact-card">
+              <label for="additionalNotes">Anything else we should know?</label>
+              <textarea
+                id="additionalNotes"
+                placeholder="e.g., Our executives often join from remote locations, ADA accessibility needs, we host trainings every week, room is used nearly all day, etc."
+              ></textarea>
+              <small>
+                When you click <strong>Send to Bradfield’s</strong>, your room
+                details and concept summary will open in an email to
+                <span class="emphasis">steveh@bradfields.com</span>.
+              </small>
+            </div>
+          </section>
+
+          <!-- Navigation buttons -->
+          <div class="btn-row">
+            <button type="button" class="btn-ghost" id="resetBtn">
+              ⟲ Start Over
+            </button>
+            <div class="btn-group-right">
+              <button
+                type="button"
+                class="btn-secondary"
+                id="prevBtn"
+                disabled
+              >
+                ← Back
+              </button>
+              <button type="button" class="btn-primary" id="nextBtn">
+                Next step →
+              </button>
+              <button type="button" class="btn-submit" id="submitBtn">
+                ✉ Send to Bradfield's
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Live Summary -->
+        <aside id="summary-panel">
+          <div class="summary-card">
+            <div class="summary-heading">
+              <div>Live Concept Summary</div>
+              <span>Updates as you go</span>
+            </div>
+            <div class="summary-tagline">
+              As you fill out the steps, Bradfield’s AV Room Designer builds a
+              concept-level recommendation our engineers can refine.
+            </div>
+
+            <div class="summary-cols">
+              <div class="summary-block">
+                <h4>Room Overview</h4>
+                <ul id="summaryRoom">
+                  <li>Room: <span class="emphasis">Not yet specified</span></li>
+                  <li>Type: –</li>
+                  <li>Size: –</li>
+                  <li>Capacity: –</li>
+                  <li>Layout: –</li>
+                </ul>
+              </div>
+              <div class="summary-block">
+                <h4>Usage & Platform</h4>
+                <ul id="summaryUse">
+                  <li>Use cases: –</li>
+                  <li>Platforms: –</li>
+                  <li>Connections: –</li>
+                  <li>Timeline: –</li>
+                  <li>Budget: –</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="summary-block" style="margin-top: 10px;">
+              <h4>Suggested AV Direction (Concept)</h4>
+              <ul id="summaryRecommendations">
+                <li>
+                  We’ll recommend a display size and viewing strategy once room
+                  size and capacity are provided.
+                </li>
+              </ul>
+              <p class="summary-note">
+                This is a starting point only. Bradfield’s AV engineers will
+                refine all hardware selections, signal flow, and details.
+              </p>
+            </div>
+
+            <div class="room-preview" id="roomPreview">
+              <div class="room-preview-header">
+                <div class="room-preview-title">
+                  Room snapshot
+                </div>
+                <div class="room-preview-badge" id="roomPreviewBadge">
+                  Waiting for basics…
+                </div>
+              </div>
+              <div class="room-preview-layout">
+                <div class="room-preview-diagram" id="roomPreviewDiagram">
+                  Add room size & type to preview a suggested layout.
+                </div>
+                <div class="room-preview-meta" id="roomPreviewMeta">
+                  <span>Type: –</span>
+                  <span>Display: –</span>
+                  <span>Camera: –</span>
+                  <span>Audio: –</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="accent-chip">
+              <span class="accent-chip-dot"></span>
+              <span>
+                When you’re ready, use <strong>Send to Bradfield’s</strong> to
+                email this concept directly to our AV team.
+              </span>
+            </div>
+          </div>
+
+          <div class="summary-block">
+            <h4>Copy-and-Paste Summary</h4>
+            <p class="summary-note">
+              You can paste this into an email to Bradfield’s, attach it to a
+              ticket, or keep it for your records.
+            </p>
+            <textarea
+              id="summaryText"
+              class="summary-textarea"
+              readonly
+            ></textarea>
+            <div class="copy-row">
+              <button type="button" class="btn-secondary" id="copySummaryBtn">
+                ⧉ Copy Summary
+              </button>
+              <span class="copy-status" id="copyStatus">
+                Waiting for inputs…
+              </span>
+            </div>
+          </div>
+
+          <p class="disclaimer">
+            This tool provides conceptual guidance only. Bradfield’s AV Team
+            will validate infrastructure, compliance, and detailed engineering
+            prior to deployment.
+          </p>
+        </aside>
+      </div>
+    </div>
+
+    <footer>
+      © <span id="year"></span> Bradfield’s Computer Supply · AV Design ·
+      Integration · Support
+    </footer>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const state = {
+      roomName: "",
+      roomType: "",
+      length: "",
+      width: "",
+      seatingStyle: "",
+      capacity: "",
+      roomNotes: "",
+      useCases: [],
+      platforms: [],
+      connections: [],
+      cameraPriority: "",
+      audioPriority: "",
+      budgetRange: "",
+      timeline: "",
+      supportLevel: "",
+      preferenceNotes: "",
+      contactName: "",
+      contactEmail: "",
+      contactOrg: "",
+      contactPhone: "",
+      additionalNotes: "",
+    };
+
+    let currentStep = 1;
+    const maxStep = 4;
+
+    // DOM references
+    const stepPanels = document.querySelectorAll(".step-panel");
+    const stepIndicators = document.querySelectorAll(".step");
+    const stepLines = document.querySelectorAll(".step-line");
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const summaryRoom = document.getElementById("summaryRoom");
+    const summaryUse = document.getElementById("summaryUse");
+    const summaryRecommendations = document.getElementById("summaryRecommendations");
+    const summaryText = document.getElementById("summaryText");
+    const copyBtn = document.getElementById("copySummaryBtn");
+    const copyStatus = document.getElementById("copyStatus");
+
+    const roomPreviewBadge = document.getElementById("roomPreviewBadge");
+    const roomPreviewDiagram = document.getElementById("roomPreviewDiagram");
+    const roomPreviewMeta = document.getElementById("roomPreviewMeta");
+
+    // ---------- PILL GROUPS ----------
+    function setupMultiPillGroup(id, stateKey) {
+      const group = document.getElementById(id);
+      if (!group) return;
+      group.addEventListener("click", function (e) {
+        const btn = e.target.closest(".pill");
+        if (!btn) return;
+        const value = btn.getAttribute("data-value");
+        const arr = state[stateKey] || [];
+        const index = arr.indexOf(value);
+        if (index === -1) {
+          arr.push(value);
+          btn.classList.add("pill-selected");
+        } else {
+          arr.splice(index, 1);
+          btn.classList.remove("pill-selected");
+        }
+        state[stateKey] = arr;
+        updateSummary();
+      });
+    }
+
+    setupMultiPillGroup("useCases", "useCases");
+    setupMultiPillGroup("platforms", "platforms");
+    setupMultiPillGroup("connections", "connections");
+
+    // Budget range: single select
+    (function setupBudgetPills() {
+      const group = document.getElementById("budgetRange");
+      if (!group) return;
+      group.addEventListener("click", function (e) {
+        const btn = e.target.closest(".pill");
+        if (!btn) return;
+        const value = btn.getAttribute("data-value");
+
+        const pills = group.querySelectorAll(".pill");
+        pills.forEach((p) => p.classList.remove("pill-selected"));
+
+        if (state.budgetRange === value) {
+          // deselect if clicked again
+          state.budgetRange = "";
+        } else {
+          state.budgetRange = value;
+          btn.classList.add("pill-selected");
+        }
+        updateSummary();
+      });
+    })();
+
+    // ---------- INPUT SYNC ----------
+    function syncInput(id, key) {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      const handler = function (e) {
+        state[key] = e.target.value;
+        updateSummary();
+      };
+
+      el.addEventListener("input", handler);
+      if (el.tagName.toLowerCase() === "select") {
+        el.addEventListener("change", handler);
+      }
+    }
+
+    syncInput("roomName", "roomName");
+    syncInput("roomType", "roomType");
+    syncInput("roomLength", "length");
+    syncInput("roomWidth", "width");
+    syncInput("seatingStyle", "seatingStyle");
+    syncInput("capacity", "capacity");
+    syncInput("roomNotes", "roomNotes");
+    syncInput("cameraPriority", "cameraPriority");
+    syncInput("audioPriority", "audioPriority");
+    syncInput("timeline", "timeline");
+    syncInput("supportLevel", "supportLevel");
+    syncInput("preferenceNotes", "preferenceNotes");
+    syncInput("contactName", "contactName");
+    syncInput("contactEmail", "contactEmail");
+    syncInput("contactOrg", "contactOrg");
+    syncInput("contactPhone", "contactPhone");
+    syncInput("additionalNotes", "additionalNotes");
+
+    // ---------- STEP NAV ----------
+    function showStep(step) {
+      currentStep = step;
+
+      stepPanels.forEach((panel) => {
+        const s = parseInt(panel.getAttribute("data-step"), 10);
+        panel.style.display = s === step ? "block" : "none";
+      });
+
+      stepIndicators.forEach((ind) => {
+        const classes = ind.classList;
+        const stepNum = classes.contains("step-1")
+          ? 1
+          : classes.contains("step-2")
+          ? 2
+          : classes.contains("step-3")
+          ? 3
+          : 4;
+
+        classes.remove("active", "completed");
+        if (currentStep === stepNum) {
+          classes.add("active");
+        } else if (currentStep > stepNum) {
+          classes.add("completed");
+        }
+      });
+
+      stepLines.forEach((line, index) => {
+        const lineStep = index + 1;
+        if (currentStep > lineStep) {
+          line.classList.add("active");
+        } else {
+          line.classList.remove("active");
+        }
+      });
+
+      prevBtn.disabled = currentStep === 1;
+      nextBtn.textContent =
+        currentStep === maxStep ? "Review Summary" : "Next step →";
+    }
+
+    nextBtn.addEventListener("click", function () {
+      if (currentStep < maxStep) {
+        showStep(currentStep + 1);
+      } else {
+        updateSummary();
+        const summaryPanel = document.getElementById("summary-panel");
+        if (summaryPanel && window.innerWidth < 900) {
+          summaryPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    });
+
+    prevBtn.addEventListener("click", function () {
+      if (currentStep > 1) {
+        showStep(currentStep - 1);
+      }
+    });
+
+    resetBtn.addEventListener("click", function () {
+      if (!confirm("Clear all inputs and start over?")) return;
+      Object.keys(state).forEach((key) => {
+        if (Array.isArray(state[key])) state[key] = [];
+        else state[key] = "";
+      });
+
+      document.querySelectorAll("input, textarea").forEach((el) => (el.value = ""));
+      document.querySelectorAll("select").forEach((el) => (el.value = ""));
+      document.querySelectorAll(".pill").forEach((el) =>
+        el.classList.remove("pill-selected")
+      );
+
+      showStep(1);
+      updateSummary();
+    });
+
+    // ---------- DESCRIBERS ----------
+    function describeRoomType(type) {
+      switch (type) {
+        case "huddle":
+          return "Huddle / focus room";
+        case "conference":
+          return "Conference room";
+        case "boardroom":
+          return "Boardroom";
+        case "classroom":
+          return "Classroom";
+        case "training":
+          return "Training / collaboration space";
+        case "auditorium":
+          return "Auditorium / large space";
+        case "other":
+          return "Multi-purpose / other";
+        default:
+          return "Not specified";
+      }
+    }
+
+    function describeSeating(style) {
+      switch (style) {
+        case "boardroom":
+          return "Boardroom (table-centric)";
+        case "u-shape":
+          return "U-shape";
+        case "classroom":
+          return "Classroom / rows";
+        case "theater":
+          return "Theater seating";
+        case "pods":
+          return "Pods / clusters";
+        case "flex":
+          return "Flexible / movable layout";
+        default:
+          return "Not specified";
+      }
+    }
+
+    function describeBudget(b) {
+      switch (b) {
+        case "entry":
+          return "Entry ($5k–$15k)";
+        case "standard":
+          return "Standard ($15k–$40k)";
+        case "premium":
+          return "Premium ($40k+)";
+        case "unsure":
+          return "Not sure / need guidance";
+        default:
+          return "Not specified";
+      }
+    }
+
+    function describeTimeline(t) {
+      switch (t) {
+        case "asap":
+          return "ASAP (0–60 days)";
+        case "quarter":
+          return "Within the next quarter";
+        case "six-months":
+          return "Within 6 months";
+        case "planning":
+          return "Exploratory / early planning";
+        default:
+          return "Not specified";
+      }
+    }
+
+    function describeSupport(level) {
+      switch (level) {
+        case "basic":
+          return "Basic warranty + break/fix";
+        case "enhanced":
+          return "Enhanced support / faster response";
+        case "managed":
+          return "Managed AV (monitoring / lifecycle)";
+        case "unsure":
+          return "Not sure yet";
+        default:
+          return "Not specified";
+      }
+    }
+
+    function mapUseCaseLabels(values) {
+      const map = {
+        presentations: "Presentations / slides",
+        "video-conferencing": "Video conferencing",
+        training: "Training / workshops",
+        "hybrid-learning": "Hybrid learning / remote attendees",
+        whiteboarding: "Digital whiteboarding",
+        "digital-signage": "Digital signage",
+        "room-scheduler": "Room scheduling display",
+      };
+      return values.map((v) => map[v] || v);
+    }
+
+    function mapPlatformLabels(values) {
+      const map = {
+        teams: "Microsoft Teams",
+        zoom: "Zoom",
+        webex: "Cisco Webex",
+        "google-meet": "Google Meet",
+        "soft-codec": "Other PC-based / soft codec",
+      };
+      return values.map((v) => map[v] || v);
+    }
+
+    function mapConnectionLabels(values) {
+      const map = {
+        hdmi: "HDMI at the table",
+        "usb-c": "USB-C one-cable",
+        wireless: "Wireless presenting",
+        "room-pc": "Dedicated in-room PC",
+      };
+      return values.map((v) => map[v] || v);
+    }
+
+    // ---------- RECOMMENDATION LOGIC ----------
+    function recommendDisplaySize(lengthFt, capacity, roomType) {
+      const l = parseFloat(lengthFt || "0");
+      if (!l || l <= 0) return null;
+
+      let farthest = l;
+      if (capacity && capacity > 30) {
+        farthest = l + 4;
+      }
+
+      let diag = farthest * 6;
+      if (roomType === "auditorium") {
+        diag = farthest * 5.5;
+      }
+
+      if (diag < 55) diag = 55;
+      if (diag > 120) diag = 120;
+
+      diag = Math.round(diag / 5) * 5;
+
+      let suggestion = diag + '" display';
+      if (diag >= 90) {
+        suggestion += " (or consider dual displays / projection)";
+      }
+
+      return suggestion;
+    }
+
+    function recommendCamera(state) {
+      const useVC = state.useCases.indexOf("video-conferencing") !== -1;
+      const type = state.roomType;
+      const capacity = parseInt(state.capacity || "0", 10);
+      const pref = state.cameraPriority;
+
+      if (!useVC && pref !== "none") {
+        return "Camera optional. Add only if you anticipate remote participants or recordings.";
+      }
+
+      if (pref === "none") {
+        return "No camera requested.";
+      }
+
+      if (pref === "ptz") {
+        return "PTZ camera with presets to capture presenter, audience, and whiteboard.";
+      }
+
+      if (pref === "auto-framing") {
+        return "Auto-framing camera to keep in-room participants properly framed during calls.";
+      }
+
+      if (pref === "basic") {
+        return "Single fixed camera positioned at eye level near the display for natural eye contact.";
+      }
+
+      if (!useVC) {
+        return "Camera optional based on future needs.";
+      }
+
+      if (type === "auditorium" || capacity > 20) {
+        return "PTZ or multi-camera approach to cover presenter and audience in a larger space.";
+      }
+
+      if (capacity > 8) {
+        return "Auto-framing camera to track the group in a medium-sized room.";
+      }
+
+      return "Simple fixed camera at eye level near the display for small meetings.";
+    }
+
+    function recommendAudio(state) {
+      const capacity = parseInt(state.capacity || "0", 10);
+      const style = state.seatingStyle;
+      const pref = state.audioPriority;
+      const largeRoom =
+        state.roomType === "auditorium" || capacity > 30 || style === "theater";
+
+      if (pref === "ceiling-mics") {
+        if (largeRoom) {
+          return "Ceiling microphone array(s) with room coverage tuned for speech pickup, plus distributed speakers for even audio.";
+        }
+        return "Ceiling microphone(s) to keep the table clean, paired with room speakers for local and far-end audio.";
+      }
+
+      if (pref === "table-mics") {
+        return "Table microphones positioned to capture all talkers, with tuned speakers for clear playback in the room.";
+      }
+
+      if (pref === "high-output" || largeRoom) {
+        return "Distributed loudspeaker system with amplification sized to the room, plus microphone solution suitable for presentations and audience Q&A.";
+      }
+
+      if (pref === "simple") {
+        return "Integrated soundbar or compact speaker solution aligned with the display for straightforward audio.";
+      }
+
+      if (largeRoom) {
+        return "Distributed loudspeakers and microphone solution tailored for larger rooms and audience engagement.";
+      }
+
+      if (capacity > 10) {
+        return "Room speakers plus at least one dedicated microphone array for good coverage.";
+      }
+
+      return "Simple soundbar or 2–4 speaker solution appropriate for a small room.";
+    }
+
+    function recommendConnectivity(state) {
+      const parts = [];
+      const conns = state.connections || [];
+      if (conns.indexOf("usb-c") !== -1) {
+        parts.push("USB-C single-cable connectivity for modern laptops");
+      }
+      if (conns.indexOf("hdmi") !== -1) {
+        parts.push("Table HDMI for quick traditional connections");
+      }
+      if (conns.indexOf("wireless") !== -1) {
+        parts.push("Wireless content sharing for guests and BYOD");
+      }
+      if (conns.indexOf("room-pc") !== -1) {
+        parts.push("Dedicated in-room PC for consistent conferencing and signage");
+      }
+
+      if (!parts.length) {
+        return "At least one wired connection (HDMI or USB-C) plus an option for wireless sharing, depending on your standards.";
+      }
+
+      return parts.join("; ") + ".";
+    }
+
+    function recommendPackageTier(state) {
+      const budget = state.budgetRange;
+      const capacity = parseInt(state.capacity || "0", 10);
+      const type = state.roomType;
+
+      if (budget === "entry") {
+        return "Essential package: single professional display, integrated soundbar or compact audio solution, basic camera (if needed), and simple user controls.";
+      }
+
+      if (budget === "premium") {
+        return "Premium package: larger or dual displays, advanced camera (PTZ or tracking), ceiling or table microphone solution, distributed speakers, and a control system with presets and automation.";
+      }
+
+      if (budget === "standard") {
+        return "Standard package: appropriately sized display, auto-framing camera, table or ceiling microphones, and intuitive touch control for switching sources and launching calls.";
+      }
+
+      if (type === "auditorium" || capacity > 30) {
+        return "Scaled package for large rooms: projection or large/dual displays, multi-zone audio, microphone options for presenters and audience, and integrated control tailored to your environment.";
+      }
+
+      if (capacity <= 8) {
+        return "Compact meeting package: single display, integrated audio, and simple conferencing setup ideal for small groups.";
+      }
+
+      return "Balanced AV package: properly sized display, reliable conferencing audio, and a user-friendly control experience.";
+    }
+
+    // ---------- PREVIEW BOX ----------
+    function updateRoomPreview(displaySuggestion, cameraText, audioText) {
+      const typeLabel = describeRoomType(state.roomType);
+      const capLabel = state.capacity ? state.capacity + " seats" : "Capacity TBD";
+
+      if (!state.roomType && !state.length && !state.width) {
+        roomPreviewBadge.textContent = "Waiting for basics…";
+        roomPreviewDiagram.textContent =
+          "Add room size & type to preview a suggested layout.";
+        roomPreviewMeta.innerHTML =
+          "<span>Type: –</span><span>Display: –</span><span>Camera: –</span><span>Audio: –</span>";
+        return;
+      }
+
+      roomPreviewBadge.textContent = "Concept layout";
+
+      const sizeLabel =
+        state.length && state.width
+          ? state.length + " x " + state.width + " ft"
+          : "Size TBD";
+
+      roomPreviewDiagram.textContent =
+        "Suggested layout: " +
+        typeLabel +
+        " (" +
+        sizeLabel +
+        ", " +
+        capLabel +
+        "). Final layout to be engineered by Bradfield's.";
+
+      const displayShort = displaySuggestion || "To be determined";
+      const cameraShort = cameraText.split(".")[0] || "Camera TBD";
+      const audioShort = audioText.split(".")[0] || "Audio TBD";
+
+      roomPreviewMeta.innerHTML =
+        "<span>Type: " +
+        typeLabel +
+        "</span><span>Display: " +
+        displayShort +
+        "</span><span>Camera: " +
+        cameraShort +
+        "</span><span>Audio: " +
+        audioShort +
+        "</span>";
+    }
+
+    // ---------- SUMMARY ----------
+    function updateSummary() {
+      const roomLabel = state.roomName || "Not yet specified";
+      const typeLabel = describeRoomType(state.roomType);
+      const sizeLabel =
+        state.length && state.width
+          ? state.length + " ft x " + state.width + " ft"
+          : "Not yet specified";
+      const capLabel = state.capacity ? state.capacity + " people" : "Not yet specified";
+      const layoutLabel = describeSeating(state.seatingStyle);
+
+      summaryRoom.innerHTML =
+        '<li>Room: <span class="emphasis">' +
+        roomLabel +
+        "</span></li>" +
+        "<li>Type: " +
+        typeLabel +
+        "</li>" +
+        "<li>Size: " +
+        sizeLabel +
+        "</li>" +
+        "<li>Capacity: " +
+        capLabel +
+        "</li>" +
+        "<li>Layout: " +
+        layoutLabel +
+        "</li>";
+
+      const useLabels = mapUseCaseLabels(state.useCases || []);
+      const platformLabels = mapPlatformLabels(state.platforms || []);
+      const connectionLabels = mapConnectionLabels(state.connections || []);
+      const timelineLabel = describeTimeline(state.timeline);
+      const budgetLabel = describeBudget(state.budgetRange);
+
+      summaryUse.innerHTML =
+        "<li>Use cases: " +
+        (useLabels.length ? useLabels.join(", ") : "Not yet specified") +
+        "</li>" +
+        "<li>Platforms: " +
+        (platformLabels.length ? platformLabels.join(", ") : "Not yet specified") +
+        "</li>" +
+        "<li>Connections: " +
+        (connectionLabels.length ? connectionLabels.join(", ") : "Not yet specified") +
+        "</li>" +
+        "<li>Timeline: " +
+        timelineLabel +
+        "</li>" +
+        "<li>Budget: " +
+        budgetLabel +
+        "</li>";
+
+      const recs = [];
+
+      const displaySuggestion = recommendDisplaySize(
+        state.length,
+        state.capacity,
+        state.roomType
+      );
+
+      if (displaySuggestion) {
+        recs.push(
+          '<li>Display sizing: <span class="emphasis">' +
+            displaySuggestion +
+            "</span> as a starting point.</li>"
+        );
+      } else {
+        recs.push(
+          "<li>Display sizing: Once we know room dimensions and capacity, we’ll recommend an appropriate display or projection size.</li>"
+        );
+      }
+
+      const cameraText = recommendCamera(state);
+      const audioText = recommendAudio(state);
+
+      recs.push("<li>Camera: " + cameraText + "</li>");
+      recs.push("<li>Audio: " + audioText + "</li>");
+      recs.push("<li>Connectivity: " + recommendConnectivity(state) + "</li>");
+      recs.push("<li>Overall package: " + recommendPackageTier(state) + "</li>");
+
+      if (state.roomNotes) {
+        recs.push(
+          "<li>Room considerations: " +
+            state.roomNotes.replace(/\n/g, " ").trim() +
+            "</li>"
+        );
+      }
+
+      summaryRecommendations.innerHTML = recs.join("");
+
+      // Update preview box
+      updateRoomPreview(displaySuggestion, cameraText, audioText);
+
+      // Plain-text summary (for email / copy)
+      const lines = [];
+
+      lines.push("Bradfield's AV Room Designer – Concept Summary");
+      lines.push("--------------------------------------------------");
+      lines.push("Contact name: " + (state.contactName || "Not provided"));
+      lines.push("Email: " + (state.contactEmail || "Not provided"));
+      lines.push("Organization: " + (state.contactOrg || "Not provided"));
+      if (state.contactPhone) {
+        lines.push("Phone: " + state.contactPhone);
+      }
+      lines.push("");
+
+      lines.push("Room Overview:");
+      lines.push("  Name/Label: " + roomLabel);
+      lines.push("  Type: " + typeLabel);
+      lines.push("  Size: " + sizeLabel);
+      lines.push("  Capacity: " + capLabel);
+      lines.push("  Layout: " + layoutLabel);
+      if (state.roomNotes) {
+        lines.push("  Notes: " + state.roomNotes.replace(/\n/g, " "));
+      }
+      lines.push("");
+
+      lines.push("Usage & Platforms:");
+      lines.push(
+        "  Use cases: " +
+          (useLabels.length ? useLabels.join(", ") : "Not yet specified")
+      );
+      lines.push(
+        "  Video platforms: " +
+          (platformLabels.length ? platformLabels.join(", ") : "Not yet specified")
+      );
+      lines.push(
+        "  Connection preferences: " +
+          (connectionLabels.length ? connectionLabels.join(", ") : "Not yet specified")
+      );
+      lines.push("  Timeline: " + timelineLabel);
+      lines.push("  Budget: " + budgetLabel);
+      if (state.supportLevel) {
+        lines.push("  Support expectations: " + describeSupport(state.supportLevel));
+      }
+      if (state.preferenceNotes) {
+        lines.push(
+          "  Standards / preferences: " +
+            state.preferenceNotes.replace(/\n/g, " ")
+        );
+      }
+      lines.push("");
+
+      lines.push("Concept-Level AV Recommendations (to be engineered by Bradfield's):");
+      if (displaySuggestion) {
+        lines.push("  Display: " + displaySuggestion + " (starting point)");
+      } else {
+        lines.push(
+          "  Display: to be determined based on final room dimensions and viewing needs."
+        );
+      }
+      lines.push("  Camera: " + cameraText);
+      lines.push("  Audio: " + audioText);
+      lines.push("  Connectivity: " + recommendConnectivity(state));
+      lines.push("  Package direction: " + recommendPackageTier(state));
+      lines.push("");
+
+      if (state.additionalNotes) {
+        lines.push(
+          "Additional notes from requester: " +
+            state.additionalNotes.replace(/\n/g, " ")
+        );
+        lines.push("");
+      }
+
+      lines.push(
+        "Note: This summary is conceptual. Bradfield's AV engineering team will refine equipment selection, signal flow, and installation details."
+      );
+
+      summaryText.value = lines.join("\n");
+
+      if (summaryText.value.trim().length > 0) {
+        copyStatus.textContent = "Summary is ready to copy.";
+      } else {
+        copyStatus.textContent = "Waiting for inputs…";
+      }
+    }
+
+    // ---------- COPY SUMMARY ----------
+    if (copyBtn) {
+      copyBtn.addEventListener("click", function () {
+        if (!summaryText.value) return;
+        summaryText.select();
+        try {
+          const successful = document.execCommand("copy");
+          copyStatus.textContent = successful
+            ? "Summary copied to clipboard."
+            : "Unable to copy. Select and copy manually.";
+        } catch (err) {
+          copyStatus.textContent = "Unable to copy. Select and copy manually.";
+        }
+
+        setTimeout(function () {
+          copyStatus.textContent = "Summary is ready to copy.";
+        }, 3500);
+      });
+    }
+
+    // ---------- SEND TO BRADFIELD'S (mailto: steveh@bradfields.com) ----------
+    function handleSubmitToEmail() {
+      updateSummary();
+
+      if (!state.contactName || !state.contactEmail) {
+        alert("Please provide at least your name and email so Bradfield's can respond.");
+        return;
+      }
+
+      const subject =
+        "AV Room Concept – " + (state.roomName || "New Room Design Request");
+      const body = summaryText.value || "";
+
+      const mailto =
+        "mailto:steveh@bradfields.com" +
+        "?subject=" +
+        encodeURIComponent(subject) +
+        "&body=" +
+        encodeURIComponent(body);
+
+      window.location.href = mailto;
+    }
+
+    if (submitBtn) {
+      submitBtn.addEventListener("click", handleSubmitToEmail);
+    }
+
+    // ---------- INIT ----------
+    showStep(1);
+    updateSummary();
+    const yearEl = document.getElementById("year");
+    if (yearEl) {
+      yearEl.textContent = new Date().getFullYear().toString();
+    }
+  });
+</script>
+
+</body>
+
+</html>
