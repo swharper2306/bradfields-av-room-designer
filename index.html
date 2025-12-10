@@ -1340,21 +1340,33 @@
     });
 
     resetBtn.addEventListener("click", function () {
-      if (!confirm("Clear all inputs and start over?")) return;
-      Object.keys(state).forEach((key) => {
-        if (Array.isArray(state[key])) state[key] = [];
-        else state[key] = "";
-      });
+  // Clear local state
+  Object.keys(state).forEach(function (key) {
+    if (Array.isArray(state[key])) {
+      state[key] = [];
+    } else {
+      state[key] = "";
+    }
+  });
 
-      document.querySelectorAll("input, textarea").forEach((el) => (el.value = ""));
-      document.querySelectorAll("select").forEach((el) => (el.value = ""));
-      document.querySelectorAll(".pill").forEach((el) =>
-        el.classList.remove("pill-selected")
-      );
+  // Clear all inputs and selects
+  document.querySelectorAll("input, textarea").forEach(function (el) {
+    el.value = "";
+  });
+  document.querySelectorAll("select").forEach(function (el) {
+    el.value = "";
+  });
 
-      showStep(1);
-      updateSummary();
-    });
+  // Clear pill selections
+  document.querySelectorAll(".pill").forEach(function (el) {
+    el.classList.remove("pill-selected");
+  });
+
+  // Go back to Step 1 and refresh summary
+  showStep(1);
+  updateSummary();
+});
+
 
     // ---------- DESCRIBERS ----------
     function describeRoomType(type) {
