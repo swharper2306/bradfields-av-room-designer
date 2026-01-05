@@ -980,7 +980,7 @@
                 <input
                   type="text"
                   id="contactOrg"
-                  placeholder="e.g., OSF Healthcare, District 321, XYZ Corp"
+                  placeholder="e.g., Acme Corp, District 321, XYZ Corp"
                 />
               </div>
             </div>
@@ -1003,7 +1003,7 @@
               <small>
                 When you click <strong>Send to Bradfield’s</strong>, your room
                 details and concept summary will open in an email to
-                <span class="emphasis">steveh@bradfields.com</span>.
+                <span class="emphasis">kainanc@bradfields.com (CC: greggb@bradfields.com, steveh@bradfields.com)</span>.
               </small>
             </div>
           </section>
@@ -1901,12 +1901,11 @@
         "AV Room Concept – " + (state.roomName || "New Room Design Request");
       const body = summaryText.value || "";
 
-      const mailto =
-        "mailto:steveh@bradfields.com" +
-        "?subject=" +
-        encodeURIComponent(subject) +
-        "&body=" +
-        encodeURIComponent(body);
+const mailto =
+  "mailto:kainanc@bradfields.com" +
+  "?cc=" + encodeURIComponent("greggb@bradfields.com,steveh@bradfields.com") +
+  "&subject=" + encodeURIComponent(subject) +
+  "&body=" + encodeURIComponent(body);
 
       window.location.href = mailto;
     }
